@@ -1,0 +1,35 @@
+#!/bin/bash
+
+usage() {
+  echo "Not enough arguments supplied."
+  echo "Syntax: $(basename $0) {roomname||all}"
+  echo
+}
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 1
+fi
+
+. $(dirname $0)/auth
+
+ROOM=$1
+
+if [[ "${ROOM^^}" == "ALL" ]]; then
+  # show all rooms
+  curl -s --insecure -X GET \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{}' "http://localhost:8008/_synapse/admin/v1/rooms" | \
+    sed 's/,/,\n  /g; s/{/{\n  /g; s/}/\n}/g'
+else
+  # filter by room name
+  curl -s --insecure -X GET \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{}' "http://localhost:8008/_synapse/admin/v1/rooms?search_term=$ROOM" | \
+    sed 's/,/,\n  /g; s/{/{\n  /g; s/}/\n}/g'
+fi
+
+
+echo

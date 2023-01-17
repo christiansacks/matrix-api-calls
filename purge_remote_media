@@ -1,0 +1,26 @@
+#!/bin/bash
+
+usage() {
+  echo "Not enough arguments supplied."
+  echo "Syntax: $(basename $0) {date yyyy-mm-dd}"
+  echo
+}
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 1
+fi
+
+. $(dirname $0)/auth
+
+DS=$1
+TS=$(date -d "${DS}" "+%s%3N")
+echo "Converting ${DS} to ${TS}"
+
+curl -s --insecure -X POST \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{}' "http://localhost:8008/_synapse/admin/v1/purge_media_cache?before_ts=${TS}" \
+    # | sed 's/,/,\n  /g; s/{/{\n  /g; s/}/\n}/g'
+
+echo

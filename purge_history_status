@@ -1,0 +1,25 @@
+#!/bin/bash
+
+usage() {
+  echo "Not enough arguments supplied."
+  echo "Syntax: $(basename $0) {statusid}"
+  echo
+}
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 1
+fi
+
+. $(dirname $0)/auth
+
+SID=$1
+echo "Using status_id: ${SID}"
+
+curl -s -X GET \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  "http://localhost:8008/_synapse/admin/v1/purge_history_status/${SID}" \
+  # | sed 's/,/,\n  /g; s/{/{\n  /g; s/}/\n}/g'
+
+echo

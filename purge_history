@@ -1,0 +1,30 @@
+#!/bin/bash
+
+usage() {
+  echo "Not enough arguments supplied."
+  echo "Syntax: $(basename $0) {roomid} {date yyyy-mm-dd}"
+  echo
+}
+
+if [[ $# -lt 2 ]]; then
+  usage
+  exit 1
+fi
+
+. $(dirname $0)/auth
+
+RID=$1
+DS=$2
+TS=$(date -d "${DS}" "+%s%3N")
+
+curl -s --insecure -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ 
+        "delete_local_events": true, 
+        "purge_up_to_ts": '${TS}' 
+      }' \
+  "http://localhost:8008/_synapse/admin/v1/purge_history/${RID}" \
+  # | sed 's/,/,\n  /g; s/{/{\n  /g; s/}/\n}/g'
+
+echo
